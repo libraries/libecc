@@ -35,18 +35,18 @@
 #ifndef WITH_LIBECC_CONFIG_OVERRIDE
 
 /* Supported curves */
-#define WITH_CURVE_FRP256V1
-#define WITH_CURVE_SECP192R1
-#define WITH_CURVE_SECP224R1
+// #define WITH_CURVE_FRP256V1
+// #define WITH_CURVE_SECP192R1
+// #define WITH_CURVE_SECP224R1
 #define WITH_CURVE_SECP256R1
-#define WITH_CURVE_SECP384R1
-#define WITH_CURVE_SECP521R1
-#define WITH_CURVE_BRAINPOOLP224R1
-#define WITH_CURVE_BRAINPOOLP256R1
-#define WITH_CURVE_BRAINPOOLP384R1
-#define WITH_CURVE_BRAINPOOLP512R1
-#define WITH_CURVE_GOST256
-#define WITH_CURVE_GOST512
+// #define WITH_CURVE_SECP384R1
+// #define WITH_CURVE_SECP521R1
+// #define WITH_CURVE_BRAINPOOLP224R1
+// #define WITH_CURVE_BRAINPOOLP256R1
+// #define WITH_CURVE_BRAINPOOLP384R1
+// #define WITH_CURVE_BRAINPOOLP512R1
+// #define WITH_CURVE_GOST256
+// #define WITH_CURVE_GOST512
 /* ADD curves define here */
 /* XXX: Do not remove the comment above, as it is
  * used by external tools as a placeholder to add or
@@ -54,25 +54,25 @@
  */
 
 /* Supported hash algorithms */
-#define WITH_HASH_SHA224
+// #define WITH_HASH_SHA224
 #define WITH_HASH_SHA256
-#define WITH_HASH_SHA384
-#define WITH_HASH_SHA512
-#define WITH_HASH_SHA512_224
-#define WITH_HASH_SHA512_256
-#define WITH_HASH_SHA3_224
-#define WITH_HASH_SHA3_256
-#define WITH_HASH_SHA3_384
-#define WITH_HASH_SHA3_512
+// #define WITH_HASH_SHA384
+// #define WITH_HASH_SHA512
+// #define WITH_HASH_SHA512_224
+// #define WITH_HASH_SHA512_256
+// #define WITH_HASH_SHA3_224
+// #define WITH_HASH_SHA3_256
+// #define WITH_HASH_SHA3_384
+// #define WITH_HASH_SHA3_512
 
 /* Supported sig/verif schemes */
 #define WITH_SIG_ECDSA
-#define WITH_SIG_ECKCDSA
-#define WITH_SIG_ECSDSA
-#define WITH_SIG_ECOSDSA
-#define WITH_SIG_ECFSDSA
-#define WITH_SIG_ECGDSA
-#define WITH_SIG_ECRDSA
+// #define WITH_SIG_ECKCDSA
+// #define WITH_SIG_ECSDSA
+// #define WITH_SIG_ECOSDSA
+// #define WITH_SIG_ECFSDSA
+// #define WITH_SIG_ECGDSA
+// #define WITH_SIG_ECRDSA
 
 #endif /* WITH_LIBECC_CONFIG_OVERRIDE */
 

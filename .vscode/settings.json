@@ -1,0 +1,10 @@
+{
+  "files.associations": {
+    "*.cjson": "jsonc",
+    "*.wxss": "css",
+    "*.wxs": "javascript",
+    ".gitmodules": "gitconfig",
+    "*.vue": "vue",
+    "libec.h": "c"
+  }
+}
