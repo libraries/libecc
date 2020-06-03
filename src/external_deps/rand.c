@@ -58,8 +58,9 @@ static int fimport(unsigned char *buf, u16 buflen, const char *path)
 
 	// return (copied == buflen) ? 0 : -1;
 
+
 	for (u16 i = 0; i < buflen; i++){
-		buf[i] = i;
+		buf[i] = i + (int)(*path);
 	}
 
 	return 0;

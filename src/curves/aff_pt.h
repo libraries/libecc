@@ -41,4 +41,10 @@ void ec_shortw_aff_copy(aff_pt_t out, aff_pt_src_t in);
 int ec_shortw_aff_cmp(aff_pt_src_t in1, aff_pt_src_t in2);
 int ec_shortw_aff_eq_or_opp(aff_pt_src_t in1, aff_pt_src_t in2);
 
+int aff_pt_import_from_buf(aff_pt_t pt,
+			   const u8 *pt_buf,
+			   u16 pt_buf_len, ec_shortw_crv_src_t crv);
+
+int aff_pt_export_to_buf(aff_pt_src_t pt, u8 *pt_buf, u32 pt_buf_len);
+
 #endif /* __EC_SHORTW_AFF_PT_H__ */
