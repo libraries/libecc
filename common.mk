@@ -54,6 +54,10 @@ CFLAGS ?= $(WARNING_CFLAGS) -pedantic -fno-builtin -std=c99 \
 	  $(FORTIFY_FLAGS) $(STACK_PROT_FLAG) -O3 -D__unix__
 LDFLAGS ?=
 
+ifeq ($(LIBECC_WITH_LL_U256_MONT),1)
+CFLAGS += -DWITH_LL_U256_MONT
+endif
+
 # Default AR and RANLIB if not overriden by user
 AR ?= ar
 RANLIB ?= ranlib

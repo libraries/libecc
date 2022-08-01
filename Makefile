@@ -49,6 +49,9 @@ src/external_deps/%.d: src/external_deps/%.c
 src/external_deps/%.o: src/external_deps/%.c
 	$(CC) $(LIB_CFLAGS) -c $< -o $@
 
+src/nn/ll_u256_mont-riscv64.o: src/nn/ll_u256_mont-riscv64.S
+	$(CC) -c -DCKB_DECLARATION_ONLY  $(LIB_CFLAGS) -o $@ $<
+
 # utils module (for the ARITH layer, we only need
 # NN and FP - and not curves - related stuff. Same goes
 # for EC and SIGN. Hence the distinction between three
@@ -102,6 +105,9 @@ src/fp/%.o: src/fp/%.c $(NN_CONFIG) $(CFG_DEPS)
 
 
 LIBARITH_OBJECTS = $(FP_OBJECTS) $(NN_OBJECTS) $(RAND_OBJECTS) $(UTILS_ARITH_OBJECTS)
+ifeq ($(LIBECC_WITH_LL_U256_MONT),1)
+LIBARITH_OBJECTS += src/nn/ll_u256_mont-riscv64.o
+endif
 $(LIBARITH): $(LIBARITH_OBJECTS)
 	$(AR) $(AR_FLAGS) $@ $^
 	$(RANLIB) $(RANLIB_FLAGS) $@

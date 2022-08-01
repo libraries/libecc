@@ -96,6 +96,20 @@ word_t nn_compute_redc1_coefs(nn_t r, nn_t r_square, nn_src_t p_in)
 	return mpinv;
 }
 
+#ifdef WITH_LL_U256_MONT
+
+TODO: fix me
+#error "WITH_LL_U256_MONT not implemented for now"
+
+__attribute__((noinline)) void
+ll_u256_mont_mul(uint64_t rd[4], const uint64_t ad[4], const uint64_t bd[4],
+                 const uint64_t Nd[4], uint64_t k0);
+
+static void _nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
+			  word_t mpinv) {
+}
+
+#else
 /*
  * Perform Montgomery multiplication, that is usual multplication
  * followed by reduction modulo p.
@@ -198,6 +212,7 @@ static void _nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
 	/* We restore out wlen. */
 	out->wlen -= 1;
 }
+#endif
 
 void nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
 		  word_t mpinv)
