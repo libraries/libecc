@@ -62,7 +62,7 @@ AR_FLAGS ?= rcs
 RANLIB_FLAGS ?= 
 
 # Our debug flags
-DEBUG_CFLAGS = -DDEBUG -O -g
+DEBUG_CFLAGS = -DDEBUG -O -g -DVERBOSE_INNER_VALUES
 
 # Default all and clean target that will be expanded
 # later in the Makefile

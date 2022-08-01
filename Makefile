@@ -14,17 +14,16 @@ LIBS += $(LIBARITH_DYN) $(LIBEC_DYN) $(LIBSIGN_DYN)
 endif
 
 # Executables to build
-TESTS_EXEC = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/ec_utils
+TESTS_EXEC = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/ec_utils $(BUILD_DIR)/nn_mul_redc1
 # We also compile executables with dynamic linking if asked to
 ifeq ($(WITH_DYNAMIC_LIBS),1)
 TESTS_EXEC += $(BUILD_DIR)/ec_self_tests_dyn $(BUILD_DIR)/ec_utils_dyn
 endif
 
-EXEC_TO_CLEAN = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/ec_utils $(BUILD_DIR)/ec_self_tests_dyn $(BUILD_DIR)/ec_utils_dyn
+EXEC_TO_CLEAN = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/nn_mul_redc1 $(BUILD_DIR)/nn_mul_redc1 $(BUILD_DIR)/ec_self_tests_dyn $(BUILD_DIR)/nn_mul_redc1_dyn
 
 # all and clean, as you might expect
-# all: depend $(LIBS) $(TESTS_EXEC)
-all: depend $(LIBS) 
+all: depend $(LIBS) $(TESTS_EXEC)
 
 clean:
 	@rm -f $(LIBS) $(EXEC_TO_CLEAN)
@@ -196,6 +195,9 @@ TESTS_OBJECTS_SELF_DEPS = $(patsubst %.c, %.d, $(TESTS_OBJECTS_SELF_SRC))
 TESTS_OBJECTS_UTILS_SRC = src/tests/ec_utils.c
 TESTS_OBJECTS_UTILS = $(patsubst %.c, %.o, $(TESTS_OBJECTS_UTILS_SRC))
 TESTS_OBJECTS_UTILS_DEPS = $(patsubst %.c, %.d, $(TESTS_OBJECTS_UTILS_SRC))
+TESTS_OBJECTS_NN_MUL_REDC1_SRC = src/tests/nn_mul_redc1.c
+TESTS_OBJECTS_NN_MUL_REDC1 = $(patsubst %.c, %.o, $(TESTS_OBJECTS_NN_MUL_REDC1_SRC))
+TESTS_OBJECTS_NN_MUL_REDC1_DEPS = $(patsubst %.c, %.d, $(TESTS_OBJECTS_NN_MUL_REDC1_SRC))
 
 $(TESTS_OBJECTS_CORE_DEPS): $(TESTS_OBJECTS_CORE_SRC) $(CFG_DEPS)
 	$(if $(filter $(wildcard src/tests/*.c), $<), @$(CC) $(LIB_CFLAGS) -MM $< -MF $@)
@@ -211,6 +213,9 @@ $(BUILD_DIR)/ec_self_tests: $(TESTS_OBJECTS_CORE) $(TESTS_OBJECTS_SELF_SRC) $(EX
 	$(CC) $(BIN_CFLAGS) $(BIN_LDFLAGS) $^ -o $@
 
 $(BUILD_DIR)/ec_utils: $(TESTS_OBJECTS_CORE) $(TESTS_OBJECTS_UTILS_SRC) $(EXT_DEPS_OBJECTS) $(LIBSIGN)
+	$(CC) $(BIN_CFLAGS) $(BIN_LDFLAGS) -DWITH_STDLIB  $^ -o $@
+
+$(BUILD_DIR)/nn_mul_redc1: $(TESTS_OBJECTS_CORE) $(TESTS_OBJECTS_NN_MUL_REDC1_SRC) $(EXT_DEPS_OBJECTS) $(LIBSIGN)
 	$(CC) $(BIN_CFLAGS) $(BIN_LDFLAGS) -DWITH_STDLIB  $^ -o $@
 
 # If the user asked for dynamic libraries, compile versions of our binaries against them
