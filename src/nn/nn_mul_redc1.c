@@ -98,15 +98,13 @@ word_t nn_compute_redc1_coefs(nn_t r, nn_t r_square, nn_src_t p_in)
 
 #ifdef WITH_LL_U256_MONT
 
-TODO: fix me
-#error "WITH_LL_U256_MONT not implemented for now"
-
 __attribute__((noinline)) void
 ll_u256_mont_mul(uint64_t rd[4], const uint64_t ad[4], const uint64_t bd[4],
                  const uint64_t Nd[4], uint64_t k0);
 
 static void _nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
 			  word_t mpinv) {
+  ll_u256_mont_mul(out->val, in1->val, in2->val, p->val, mpinv);
 }
 
 #else
