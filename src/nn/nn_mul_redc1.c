@@ -107,21 +107,8 @@ static void _nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
 
 static void my_nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
 			  word_t mpinv) {
-  nn out_cpy, in1_cpy, in2_cpy, p_cpy;
-  nn_copy(&out_cpy, out);
-  nn_copy(&in1_cpy, in1);
-  nn_copy(&in2_cpy, in2);
-  nn_copy(&p_cpy, p);
-  ll_u256_mont_mul(out_cpy.val, in1_cpy.val, in2_cpy.val, p_cpy.val, mpinv);
-  _nn_mul_redc1(out, in1, in2, p, mpinv);
-  MUST_HAVE(nn_cmp(out, &out_cpy) == 0);
-  MUST_HAVE(nn_cmp(in1, &in1_cpy) == 0);
-  MUST_HAVE(nn_cmp(in2, &in2_cpy) == 0);
-  MUST_HAVE(nn_cmp(p, &p_cpy) == 0);
-  nn_uninit(&out_cpy);
-  nn_uninit(&in1_cpy);
-  nn_uninit(&in2_cpy);
-  nn_uninit(&p_cpy);
+  nn_set_wlen(out, p->wlen);
+  ll_u256_mont_mul(out->val, in1->val, in2->val, p->val, mpinv);
 }
 
 #endif
