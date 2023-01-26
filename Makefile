@@ -49,7 +49,7 @@ EXT_DEPS_SRC = $(wildcard src/external_deps/*.c)
 # NN and FP - and not curves - related stuff. Same goes
 # for EC and SIGN. Hence the distinction between three
 # sets of utils objects.
-UTILS_ARITH_SRC = src/utils/utils.c
+UTILS_ARITH_SRC = src/utils/utils.c src/utils/utils_rand.c
 UTILS_ARITH_SRC += $(wildcard src/utils/*_nn.c)
 UTILS_ARITH_SRC += $(wildcard src/utils/*_fp.c)
 UTILS_ARITH_SRC += $(wildcard src/utils/*_buf.c)
