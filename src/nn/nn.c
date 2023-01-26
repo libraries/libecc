@@ -16,7 +16,12 @@
 #define NN_CONSISTENCY_CHECK
 #include "nn.h"
 
-#include "../external_deps/rand.h"
+/* 
+ * Used for the conditional swap algorithm SCA
+ * resistance, see below in the implementation of
+ * nn_cnd_swap.
+ */
+#include "../utils/utils_rand.h"
 
 /*
  * Except otherwise specified, all functions accept *initialized* nn.
