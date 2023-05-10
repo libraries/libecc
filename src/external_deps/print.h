@@ -15,7 +15,13 @@
  */
 #ifndef __PRINT_H__
 #define __PRINT_H__
+#if (__GNUC__ * 10 + __GNUC_MINOR__ >= 42)
+#define LIBECC_FORMAT_FUNCTION(F,A) __attribute__((format(__printf__, F, A)))
+#else
+#define LIBECC_FORMAT_FUNCTION(F,A)
+#endif
 
+LIBECC_FORMAT_FUNCTION(1, 2)
 void ext_printf(const char *format, ...);
 
 #endif /* __PRINT_H__ */

@@ -973,7 +973,7 @@ ATTRIBUTE_WARN_UNUSED_RET static int dump_hdr_info(const metadata_hdr * hdr)
 
 	/* Dump the header */
 	printf("Metadata header info:\n");
-	printf("    magic   = 0x%08" PRIx32 "\n", hdr->magic);
+	printf("    magic   = 0x%08" PRIx32 "\n", (unsigned long)hdr->magic);
 	switch (hdr->type) {
 	case IMAGE_TYPE0:
 		printf("    type    = IMAGE_TYPE0\n");
@@ -991,9 +991,9 @@ ATTRIBUTE_WARN_UNUSED_RET static int dump_hdr_info(const metadata_hdr * hdr)
 		printf("    type %" PRIu32 " unknown!\n", hdr->type);
 		break;
 	}
-	printf("    version = 0x%08" PRIx32 "\n", hdr->version);
-	printf("    len	    = 0x%08" PRIx32 "\n", hdr->len);
-	printf("    siglen  = 0x%08" PRIx32 "\n", hdr->siglen);
+	printf("    version = 0x%08" PRIx32 "\n", (unsigned long)hdr->version);
+	printf("    len	    = 0x%08" PRIx32 "\n", (unsigned long)hdr->len);
+	printf("    siglen  = 0x%08" PRIx32 "\n", (unsigned long)hdr->siglen);
 	ret = 0;
 
 err:
@@ -1117,7 +1117,7 @@ ATTRIBUTE_WARN_UNUSED_RET static int verify_bin_file(const char *ec_name, const 
 		if (hdr.magic != HDR_MAGIC) {
 			ret = -1;
 			printf("Error: got magic 0x%08" PRIx32 " instead of 0x%08x "
-			       "from metadata header\n", hdr.magic, (unsigned int)HDR_MAGIC);
+			       "from metadata header\n", (unsigned long)hdr.magic, (unsigned int)HDR_MAGIC);
 			goto err;
 		}
 

@@ -44,10 +44,13 @@ typedef uint32_t hword_t;
 #define PRIx16 "hx"
 #endif
 #ifndef PRIx32
-#define PRIx32 "x"
+#define PRIx32 "lx"
 #endif
 #ifndef PRIx64
-#define PRIx64 "llx"
+#ifndef __PRI_64_LENGTH_MODIFIER__
+#define __PRI_64_LENGTH_MODIFIER__ "ll"
+#endif
+#define PRIx64 __PRI_64_LENGTH_MODIFIER__ "x"
 #endif
 
 #define PRINTF_WORD_HEX_FMT "%016" PRIx64
