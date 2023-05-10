@@ -4,12 +4,22 @@
 MINGW := $(shell $(CROSS_COMPILE)$(CC) -dumpmachine 2>&1 | grep -v mingw)
 # Detect Mac OS compilers: these usually don't like ELF pie related flags ...
 APPLE := $(shell $(CROSS_COMPILE)$(CC) -dumpmachine 2>&1 | grep -v apple)
+SYS_ROOT :=
 ifneq ($(MINGW),)
-FPIC_CFLAG=-fPIC
-ifneq ($(APPLE),)
-FPIE_CFLAG=-fPIE
-FPIE_LDFLAGS=-pie -Wl,-z,relro,-z,now
+  FPIC_CFLAG=-fPIC
+  ifneq ($(APPLE),)
+    FPIE_CFLAG=-fPIE
+    FPIE_LDFLAGS=-pie -Wl,-z,relro,-z,now
+  endif
 endif
+
+ifeq ($(APPLE),)
+  SYS_ROOT_PATH := $(shell xcode-select --print-path)
+  ifneq ($(SYS_ROOT_PATH),)
+    SYS_ROOT_PATH := $(SYS_ROOT_PATH)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk
+    SYS_ROOT := --sysroot=$(SYS_ROOT_PATH)
+    $(info Using MacOS SDK $(SYS_ROOT_PATH))
+  endif
 endif
 
 # NOTE: with mingw, FORTIFY_SOURCE=2 must be used
@@ -22,7 +32,30 @@ FORTIFY_FLAGS=-D_FORTIFY_SOURCE=2
 # debug mode, expected word size (16, 32, 64), etc. Those are then used to
 # define two differents kinds of CFLAGS we will use for building our library
 # (LIB_CFLAGS) and binaries (BIN_CFLAGS) objects.
+
+# Detect if we are using clang or gcc
+CLANG :=  $(shell $(CROSS_COMPILE)$(CC) -v 2>&1 | grep clang)
+
+# Default warning flags
+# -Werror: treat warnings as errors
 #
+# Pedantic mode: enable more warnings
+# -Wshadow: warn the user if a variable declaration shadows one from a parent context
+# -Wdouble-promotion: warn about implicit conversion from float to double
+# -Wformat=2: warn about format string vulnerabilities
+# -fno-common: disallow global variables with same name and type
+# -Wconversion: warn about implicit conversion
+# -Wformat-security: warn about format string vulnerabilities
+WARNING_CFLAGS = -Werror
+ifeq ($(PEDANTIC),1)
+  WARNING_CFLAGS += -Wshadow -Wdouble-promotion -Wformat=2 -fno-common -Wconversion -Wformat-security
+endif
+
+# Disable certain warnings:
+# -Wno-unused-parameter: commonly a false positive. Functions may be required to have a certain signature.
+# -Wno-declaration-after-statement: our C standard supports declaration after statements
+WARNING_CFLAGS += -Wno-unused-parameter -Wno-declaration-after-statement
+
 # When compiler is *explicitly* set to clang, use its -Weverything option by
 # default but disable the sepcific options we cannot support:
 #
@@ -32,8 +65,16 @@ FORTIFY_FLAGS=-D_FORTIFY_SOURCE=2
 #   -Wno-covered-switch-default
 #   -Wno-used-but-marked-unused
 #
-CLANG :=  $(shell $(CROSS_COMPILE)$(CC) -v 2>&1 | grep clang)
 ifneq ($(CLANG),)
+  WARNING_CFLAGS += -Weverything \
+		 -Wno-reserved-id-macro -Wno-padded \
+		 -Wno-packed -Wno-covered-switch-default \
+		 -Wno-used-but-marked-unused -Wno-switch-enum
+  # Add warnings if we are in pedantic mode
+  ifeq ($(PEDANTIC),1)
+    WARNING_CFLAGS += -Walloca -Wcast-qual -Wnull-dereference -Wstack-protector -Wvla -Warray-bounds -Warray-bounds-pointer-arithmetic -Wassign-enum -Wbad-function-cast -Wconditional-uninitialized -Wfloat-equal -Wformat-type-confusion -Widiomatic-parentheses -Wimplicit-fallthrough -Wloop-analysis -Wpointer-arith -Wshift-sign-overflow -Wshorten-64-to-32 -Wtautological-constant-in-range-compare -Wunreachable-code-aggressive -Wthread-safety -Wthread-safety-beta -Wcomma
+  endif
+
   # get clang version e.g. 14.0.3
   CLANG_VERSION := $(shell $(CROSS_COMPILE)$(CC) -dumpversion)
   # convert to 14 * 100 + 0
@@ -43,15 +84,6 @@ ifneq ($(CLANG),)
   # Comparison results (1 if true, 0 if false)
   CLANG_VERSION_GTE_13 := $(shell [ $(CLANG_VERSION) -ge 1300 ]  && echo true)
   CLANG_VERSION_GTE_17 := $(shell [ $(CLANG_VERSION) -ge 1700 ]  && echo true)
-
-  WARNING_CFLAGS = -Weverything -Werror \
-  		 -Wno-reserved-id-macro -Wno-padded \
-  		 -Wno-packed -Wno-covered-switch-default \
-  		 -Wno-used-but-marked-unused -Wno-switch-enum
-  # Add warnings if we are in pedantic mode
-  ifeq ($(PEDANTIC),1)
-    WARNING_CFLAGS += -Werror -Walloca -Wcast-qual -Wconversion -Wformat=2 -Wformat-security -Wnull-dereference -Wstack-protector -Wvla -Warray-bounds -Warray-bounds-pointer-arithmetic -Wassign-enum -Wbad-function-cast -Wconditional-uninitialized -Wconversion -Wfloat-equal -Wformat-type-confusion -Widiomatic-parentheses -Wimplicit-fallthrough -Wloop-analysis -Wpointer-arith -Wshift-sign-overflow -Wshorten-64-to-32 -Wtautological-constant-in-range-compare -Wunreachable-code-aggressive -Wthread-safety -Wthread-safety-beta -Wcomma
-  endif
   # Clang version >= 13? Adapt
   ifeq ($(CLANG_VERSION_GTE_13), true)
     # We have to do this because the '_' prefix seems now reserved to builtins
@@ -64,16 +96,16 @@ ifneq ($(CLANG),)
     WARNING_CFLAGS += -Wno-unsafe-buffer-usage
   endif
 else
-  WARNING_CFLAGS = -W -Werror -Wextra -Wall -Wunreachable-code
+  WARNING_CFLAGS += -W -Wextra -Wall -Wunreachable-code
   # Add warnings if we are in pedantic mode
   ifeq ($(PEDANTIC),1)
-  WARNING_CFLAGS += -Wpedantic -Wformat=2 -Wformat-overflow=2 -Wformat-truncation=2 -Wformat-security -Wnull-dereference -Wstack-protector -Wtrampolines -Walloca -Wvla -Warray-bounds=2 -Wimplicit-fallthrough=3 -Wshift-overflow=2 -Wcast-qual -Wstringop-overflow=4 -Wconversion -Warith-conversion -Wlogical-op -Wduplicated-cond -Wduplicated-branches -Wformat-signedness -Wshadow -Wstrict-overflow=2 -Wundef -Wstrict-prototypes -Wswitch-default -Wcast-align=strict -Wjump-misses-init
+    WARNING_CFLAGS += -Wpedantic -Wformat-overflow=2 -Wformat-truncation=2 -Wnull-dereference -Wstack-protector -Wtrampolines -Walloca -Wvla -Warray-bounds=2 -Wimplicit-fallthrough=3 -Wshift-overflow=2 -Wcast-qual -Wstringop-overflow=4 -Warith-conversion -Wlogical-op -Wduplicated-cond -Wduplicated-branches -Wformat-signedness -Wstrict-overflow=2 -Wundef -Wstrict-prototypes -Wswitch-default -Wcast-align=strict -Wjump-misses-init
   endif
 endif
 
 ifeq ($(WNOERROR), 1)
-# Sometimes "-Werror" might be too much, this can be overriden
-WARNING_CFLAGS := $(subst -Werror,,$(WARNING_CFLAGS))
+  # Sometimes "-Werror" might be too much, this can be overriden
+  WARNING_CFLAGS := $(subst -Werror,,$(WARNING_CFLAGS))
 endif
 
 # If the user has overridden the CFLAGS or LDFLAGS, let's detect it
@@ -85,7 +117,7 @@ ifdef LDFLAGS
 USER_DEFINED_LDFLAGS = $(LDFLAGS)
 endif
 
-CFLAGS ?= $(WARNING_CFLAGS) -pedantic -fno-builtin -std=c99 \
+CFLAGS ?= $(WARNING_CFLAGS) $(SYS_ROOT) -pedantic -fno-builtin -std=c99 \
 	  $(FORTIFY_FLAGS) $(STACK_PROT_FLAG) -O3
 LDFLAGS ?=
 
