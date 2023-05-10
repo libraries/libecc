@@ -37,13 +37,13 @@ FORTIFY_FLAGS=-D_FORTIFY_SOURCE=2
 CLANG :=  $(shell $(CROSS_COMPILE)$(CC) -v 2>&1 | grep clang)
 
 ifneq ($(CLANG),)
-  # get clang version e.g. 14.0.3
+  # get clang version e.g. 14.1.3
   CLANG_VERSION := $(shell $(CROSS_COMPILE)$(CC) -dumpversion)
-  # convert to 14 * 100 + 0
+  # convert to single number e.g. 14 * 100 + 1
   CLANG_VERSION := $(shell echo $(CLANG_VERSION) | cut -f1-2 -d. | sed -e 's/\./*100+/g')
-  # Calculate value
+  # Calculate value - e.g. 1401
   CLANG_VERSION := $(shell echo $$(($(CLANG_VERSION))))
-  # Comparison results (1 if true, 0 if false)
+  # Comparison results (true if true, empty if false)
   CLANG_VERSION_GTE_12 := $(shell [ $(CLANG_VERSION) -ge 1200 ]  && echo true)
   CLANG_VERSION_GTE_13 := $(shell [ $(CLANG_VERSION) -ge 1300 ]  && echo true)
   CLANG_VERSION_GTE_17 := $(shell [ $(CLANG_VERSION) -ge 1700 ]  && echo true)
@@ -87,8 +87,6 @@ ifneq ($(CLANG),)
   ifeq ($(PEDANTIC),1)
     WARNING_CFLAGS += -Walloca -Wcast-qual -Wnull-dereference -Wstack-protector -Wvla -Warray-bounds -Warray-bounds-pointer-arithmetic -Wassign-enum -Wbad-function-cast -Wconditional-uninitialized -Wfloat-equal -Wformat-type-confusion -Widiomatic-parentheses -Wimplicit-fallthrough -Wloop-analysis -Wpointer-arith -Wshift-sign-overflow -Wshorten-64-to-32 -Wtautological-constant-in-range-compare -Wunreachable-code-aggressive -Wthread-safety -Wthread-safety-beta -Wcomma
   endif
-
-  # Clang version >= 13? Adapt
   ifeq ($(CLANG_VERSION_GTE_13), true)
     # We have to do this because the '_' prefix seems now reserved to builtins
     WARNING_CFLAGS += -Wno-reserved-identifier
