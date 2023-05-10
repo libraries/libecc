@@ -36,6 +36,19 @@ FORTIFY_FLAGS=-D_FORTIFY_SOURCE=2
 # Detect if we are using clang or gcc
 CLANG :=  $(shell $(CROSS_COMPILE)$(CC) -v 2>&1 | grep clang)
 
+ifneq ($(CLANG),)
+  # get clang version e.g. 14.0.3
+  CLANG_VERSION := $(shell $(CROSS_COMPILE)$(CC) -dumpversion)
+  # convert to 14 * 100 + 0
+  CLANG_VERSION := $(shell echo $(CLANG_VERSION) | cut -f1-2 -d. | sed -e 's/\./*100+/g')
+  # Calculate value
+  CLANG_VERSION := $(shell echo $$(($(CLANG_VERSION))))
+  # Comparison results (1 if true, 0 if false)
+  CLANG_VERSION_GTE_12 := $(shell [ $(CLANG_VERSION) -ge 1200 ]  && echo true)
+  CLANG_VERSION_GTE_13 := $(shell [ $(CLANG_VERSION) -ge 1300 ]  && echo true)
+  CLANG_VERSION_GTE_17 := $(shell [ $(CLANG_VERSION) -ge 1700 ]  && echo true)
+endif
+
 # Default warning flags
 # -Werror: treat warnings as errors
 #
@@ -75,15 +88,6 @@ ifneq ($(CLANG),)
     WARNING_CFLAGS += -Walloca -Wcast-qual -Wnull-dereference -Wstack-protector -Wvla -Warray-bounds -Warray-bounds-pointer-arithmetic -Wassign-enum -Wbad-function-cast -Wconditional-uninitialized -Wfloat-equal -Wformat-type-confusion -Widiomatic-parentheses -Wimplicit-fallthrough -Wloop-analysis -Wpointer-arith -Wshift-sign-overflow -Wshorten-64-to-32 -Wtautological-constant-in-range-compare -Wunreachable-code-aggressive -Wthread-safety -Wthread-safety-beta -Wcomma
   endif
 
-  # get clang version e.g. 14.0.3
-  CLANG_VERSION := $(shell $(CROSS_COMPILE)$(CC) -dumpversion)
-  # convert to 14 * 100 + 0
-  CLANG_VERSION := $(shell echo $(CLANG_VERSION) | cut -f1-2 -d. | sed -e 's/\./*100+/g')
-  # Calculate value
-  CLANG_VERSION := $(shell echo $$(($(CLANG_VERSION))))
-  # Comparison results (1 if true, 0 if false)
-  CLANG_VERSION_GTE_13 := $(shell [ $(CLANG_VERSION) -ge 1300 ]  && echo true)
-  CLANG_VERSION_GTE_17 := $(shell [ $(CLANG_VERSION) -ge 1700 ]  && echo true)
   # Clang version >= 13? Adapt
   ifeq ($(CLANG_VERSION_GTE_13), true)
     # We have to do this because the '_' prefix seems now reserved to builtins
@@ -295,9 +299,7 @@ ifeq ($(USE_SANITIZERS),1)
 CFLAGS += -fsanitize=undefined -fsanitize=address -fsanitize=leak
   ifneq ($(CLANG),)
     # Clang version < 12 do not support unsigned-shift-base
-    CLANG_VERSION_GTE_12_EXPRESSION := $(shell echo `$(CROSS_COMPILE)$(CC) -dumpversion | cut -f1-2 -d.` \>= 12.0 | sed -e 's/\./*100+/g')
-    CLANG_VERSION_GTE_12 := $(shell awk "BEGIN{printf \"%d\n\", $(CLANG_VERSION_GTE_12_EXPRESSION)}")
-    ifeq ($(CLANG_VERSION_GTE_12), 1)
+    ifeq ($(CLANG_VERSION_GTE_12), true)
       CFLAGS += -fsanitize=integer -fno-sanitize=unsigned-integer-overflow -fno-sanitize=unsigned-shift-base
     endif
   endif
