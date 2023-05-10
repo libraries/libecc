@@ -34,39 +34,40 @@ FORTIFY_FLAGS=-D_FORTIFY_SOURCE=2
 #
 CLANG :=  $(shell $(CROSS_COMPILE)$(CC) -v 2>&1 | grep clang)
 ifneq ($(CLANG),)
-WARNING_CFLAGS = -Weverything -Werror \
-		 -Wno-reserved-id-macro -Wno-padded \
-		 -Wno-packed -Wno-covered-switch-default \
-		 -Wno-used-but-marked-unused -Wno-switch-enum
-# Add warnings if we are in pedantic mode
-ifeq ($(PEDANTIC),1)
-WARNING_CFLAGS += -Werror -Walloca -Wcast-qual -Wconversion -Wformat=2 -Wformat-security -Wnull-dereference -Wstack-protector -Wvla -Warray-bounds -Warray-bounds-pointer-arithmetic -Wassign-enum -Wbad-function-cast -Wconditional-uninitialized -Wconversion -Wfloat-equal -Wformat-type-confusion -Widiomatic-parentheses -Wimplicit-fallthrough -Wloop-analysis -Wpointer-arith -Wshift-sign-overflow -Wshorten-64-to-32 -Wtautological-constant-in-range-compare -Wunreachable-code-aggressive -Wthread-safety -Wthread-safety-beta -Wcomma
-endif
-# Clang version >= 13? Adapt
-CLANG_VERSION_GTE_13_EXPRESSION := $(shell echo `$(CROSS_COMPILE)$(CC) -dumpversion | cut -f1-2 -d.` \>= 13.0 | sed -e 's/\./*100+/g')
-CLANG_VERSION_GTE_13 := $(shell awk "BEGIN{printf \"%d\n\", $(CLANG_VERSION_GTE_13_EXPRESSION)}")
-  ifeq ($(CLANG_VERSION_GTE_13), 1)
-  # We have to do this because the '_' prefix seems now reserved to builtins
-  WARNING_CFLAGS += -Wno-reserved-identifier
+  # get clang version e.g. 14.0.3
+  CLANG_VERSION := $(shell $(CROSS_COMPILE)$(CC) -dumpversion)
+  # convert to 14 * 100 + 0
+  CLANG_VERSION := $(shell echo $(CLANG_VERSION) | cut -f1-2 -d. | sed -e 's/\./*100+/g')
+  # Calculate value
+  CLANG_VERSION := $(shell echo $$(($(CLANG_VERSION))))
+  # Comparison results (1 if true, 0 if false)
+  CLANG_VERSION_GTE_13 := $(shell [ $(CLANG_VERSION) -ge 1300 ]  && echo true)
+  CLANG_VERSION_GTE_17 := $(shell [ $(CLANG_VERSION) -ge 1700 ]  && echo true)
+
+  WARNING_CFLAGS = -Weverything -Werror \
+  		 -Wno-reserved-id-macro -Wno-padded \
+  		 -Wno-packed -Wno-covered-switch-default \
+  		 -Wno-used-but-marked-unused -Wno-switch-enum
+  # Add warnings if we are in pedantic mode
+  ifeq ($(PEDANTIC),1)
+    WARNING_CFLAGS += -Werror -Walloca -Wcast-qual -Wconversion -Wformat=2 -Wformat-security -Wnull-dereference -Wstack-protector -Wvla -Warray-bounds -Warray-bounds-pointer-arithmetic -Wassign-enum -Wbad-function-cast -Wconditional-uninitialized -Wconversion -Wfloat-equal -Wformat-type-confusion -Widiomatic-parentheses -Wimplicit-fallthrough -Wloop-analysis -Wpointer-arith -Wshift-sign-overflow -Wshorten-64-to-32 -Wtautological-constant-in-range-compare -Wunreachable-code-aggressive -Wthread-safety -Wthread-safety-beta -Wcomma
+  endif
+  # Clang version >= 13? Adapt
+  ifeq ($(CLANG_VERSION_GTE_13), true)
+    # We have to do this because the '_' prefix seems now reserved to builtins
+    WARNING_CFLAGS += -Wno-reserved-identifier
+  endif
+  ifeq ($(CLANG_VERSION_GTE_17), true)
+    # NOTE: XXX: this is really a shame to remove this, but
+    # we have to wait until this is less sensitive and false positive
+    # prone to use it!
+    WARNING_CFLAGS += -Wno-unsafe-buffer-usage
   endif
 else
-WARNING_CFLAGS = -W -Werror -Wextra -Wall -Wunreachable-code
-# Add warnings if we are in pedantic mode
-ifeq ($(PEDANTIC),1)
-WARNING_CFLAGS += -Wpedantic -Wformat=2 -Wformat-overflow=2 -Wformat-truncation=2 -Wformat-security -Wnull-dereference -Wstack-protector -Wtrampolines -Walloca -Wvla -Warray-bounds=2 -Wimplicit-fallthrough=3 -Wshift-overflow=2 -Wcast-qual -Wstringop-overflow=4 -Wconversion -Warith-conversion -Wlogical-op -Wduplicated-cond -Wduplicated-branches -Wformat-signedness -Wshadow -Wstrict-overflow=2 -Wundef -Wstrict-prototypes -Wswitch-default -Wcast-align=strict -Wjump-misses-init
-endif
-endif
-
-# In case of clang version >= 17, the new -Wunsafe-buffer-usage
-# flag is really picky for many false positives, remove it
-ifneq ($(CLANG),)
-CLANG_VERSION_GTE_17_EXPRESSION := $(shell echo `$(CROSS_COMPILE)$(CC) -dumpversion | cut -f1-2 -d.` \>= 17.0 | sed -e 's/\./*100+/g')
-CLANG_VERSION_GTE_17 := $(shell awk "BEGIN{printf \"%d\n\", $(CLANG_VERSION_GTE_17_EXPRESSION)}")
-  ifeq ($(CLANG_VERSION_GTE_17), 1)
-  # NOTE: XXX: this is really a shame to remove this, but
-  # we have to wait until this is less sensitive and false positive
-  # prone to use it!
-  WARNING_CFLAGS += -Wno-unsafe-buffer-usage
+  WARNING_CFLAGS = -W -Werror -Wextra -Wall -Wunreachable-code
+  # Add warnings if we are in pedantic mode
+  ifeq ($(PEDANTIC),1)
+  WARNING_CFLAGS += -Wpedantic -Wformat=2 -Wformat-overflow=2 -Wformat-truncation=2 -Wformat-security -Wnull-dereference -Wstack-protector -Wtrampolines -Walloca -Wvla -Warray-bounds=2 -Wimplicit-fallthrough=3 -Wshift-overflow=2 -Wcast-qual -Wstringop-overflow=4 -Wconversion -Warith-conversion -Wlogical-op -Wduplicated-cond -Wduplicated-branches -Wformat-signedness -Wshadow -Wstrict-overflow=2 -Wundef -Wstrict-prototypes -Wswitch-default -Wcast-align=strict -Wjump-misses-init
   endif
 endif
 
