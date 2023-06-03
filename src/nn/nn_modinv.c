@@ -303,7 +303,12 @@ err:
 /*
  * Invert x modulo 2^exp using Hensel lifting. Returns 0 on success, -1 on
  * error. On success, x_isodd is 1 if x is odd, 0 if it is even.
- * Operations are done in *constant time*. The function supports aliasing.
+ * Please note that the result is correct (inverse of x) only when x is prime
+ * to 2^exp, i.e. x is odd (x_odd is 1).
+ *
+ * Operations are done in *constant time*.
+ *
+ * Aliasing is supported.
  */
 int nn_modinv_2exp(nn_t _out, nn_src_t x, bitcnt_t exp, int *x_isodd)
 {
@@ -325,6 +330,11 @@ int nn_modinv_2exp(nn_t _out, nn_src_t x, bitcnt_t exp, int *x_isodd)
 	ret = nn_init(&tmp_sqr, 0); EG(ret, err);
 	ret = nn_init(&tmp_mul, 0); EG(ret, err);
 	ret = nn_isodd(x, &isodd); EG(ret, err);
+	if (exp == (bitcnt_t)0){
+		/* Specific case of zero exponent, output 0 */
+		(*x_isodd) = isodd;
+		goto err;
+	}
 	if (!isodd) {
 		ret = nn_zero(_out); EG(ret, err);
 		(*x_isodd) = 0;
@@ -474,7 +484,10 @@ ATTRIBUTE_WARN_UNUSED_RET static int _nn_modinv_fermat_common(nn_t out, nn_src_t
 	}
 
 	/* Else we compute (p-2) for the upper layer */
-	ret = nn_init(p_minus_two, 0); EG(ret, err);
+	if(p != p_minus_two){
+		/* Handle aliasing of p and p_minus_two */
+		ret = nn_init(p_minus_two, 0); EG(ret, err);
+	}
 
 	ret = nn_init(&two, 0); EG(ret, err);
 	ret = nn_set_word_value(&two, WORD(2)); EG(ret, err);
