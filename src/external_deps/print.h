@@ -15,6 +15,13 @@
  */
 #ifndef __PRINT_H__
 #define __PRINT_H__
+
+/* Explicitly include the inttypes here */
+#ifdef WITH_STDLIB
+/* We include inttypes.h for the PRI* macros */
+#include <inttypes.h>
+#endif
+
 #if (__GNUC__ * 10 + __GNUC_MINOR__ >= 42)
 #define LIBECC_FORMAT_FUNCTION(F,A) __attribute__((format(__printf__, F, A)))
 #else
