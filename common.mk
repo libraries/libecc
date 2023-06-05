@@ -322,6 +322,7 @@ CFLAGS += -Wno-deprecated
 CFLAGS := $(patsubst -Wstrict-prototypes,,$(CFLAGS))
 CFLAGS := $(patsubst -Wjump-misses-init,,$(CFLAGS))
 CFLAGS := $(patsubst -Wduplicated-branches,,$(CFLAGS))
+CFLAGS := $(patsubst -Wno-declaration-after-statement,,$(CFLAGS))
 endif
 # clang++ case
 ifneq ($(CLANGPP),)
