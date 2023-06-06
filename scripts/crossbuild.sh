@@ -68,9 +68,13 @@ check_triplet_wordsize(){
 	# NOTE: for 64 bit triplets, multiarch/crossbuild docker's gcc 4.9 has a bug handling loop unrolling in -O3 and
 	# is mistaken in detecting arrays overflows at compilation time
 	# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64277
+	# Also, add the "-Wno-pedantic-ms-format" for specific quikrs of mingw with "%lld" (...)
 	if [ "$triplet" = "x86_64-w64-mingw32" ] || [ "$triplet" = "aarch64-linux-gnu" ]; then
 		extra_lib_cflags="-O2"
 		extra_bin_cflags=""
+		if [ "$triplet" = "x86_64-w64-mingw32" ] && [ "$wordsize" = "64" ]; then
+			extra_lib_cflags=$extra_lib_cflags" -Wno-pedantic-ms-format"
+		fi
 	# There is also a misbehavior for mingw improperly finding unintialized variables
 	# Also, add the "-Wno-pedantic-ms-format" for specific quikrs of mingw with "%lld" (...)
 	elif [ "$triplet" = "i686-w64-mingw32" ]; then
