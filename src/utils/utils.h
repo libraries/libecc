@@ -69,9 +69,12 @@
 #define SHOULD_HAVE(x) assert(x)
 #define KNOWN_FACT(x) assert(x)
 #else
-#define MUST_HAVE(x) do { if (!(x)) { while (1); } } while (0)
-#define SHOULD_HAVE(x)
-#define KNOWN_FACT(x)
+
+#include <stdio.h>
+int ckb_exit(signed char code);
+#define MUST_HAVE(x) do { if (!(x)) { printf("MUST_HAVE(%s) failed.", #x); ckb_exit(-2); } } while (0)
+#define SHOULD_HAVE(x) do { if (!(x)) { printf("SHOULD_HAVE(%s) failed.", #x); ckb_exit(-3); } } while (0)
+#define KNOWN_FACT(x) do { if (!(x)) { printf("KNOWN_FACT(%s) failed.", #x); ckb_exit(-4); } } while (0)
 #endif
 #endif /* AFL_FUZZ or FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION */
 
