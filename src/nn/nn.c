@@ -159,19 +159,14 @@ void nn_cnd_swap(int cnd, nn_t in1, nn_t in2)
 void nn_set_wlen(nn_t A, u8 new_wlen)
 {
 	u8 i;
-
-	nn_check_initialized(A);
-	MUST_HAVE(new_wlen <= NN_MAX_WORD_LEN);
-	MUST_HAVE(A->wlen <= NN_MAX_WORD_LEN);
-  if (A->wlen == new_wlen) {
-    return;
-  }
-
-        /* Trimming performed in constant time */
-        for (i = 0; i < NN_MAX_WORD_LEN; i++) {
-                A->val[i] &= WORD_MASK_IFZERO((i >= new_wlen));
-        }
-
+	if (A->wlen == new_wlen) {
+		return;
+	}
+	for (i = 0; i < NN_MAX_WORD_LEN; i++) {
+		if (i >= new_wlen) {
+			A->val[i] = 0;
+		}
+	}
 	A->wlen = new_wlen;
 }
 

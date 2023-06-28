@@ -218,20 +218,14 @@ static void _nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
 void nn_mul_redc1(nn_t out, nn_src_t in1, nn_src_t in2, nn_src_t p,
 		  word_t mpinv)
 {
-	/* Handle output aliasing */
-	if ((out == in1) || (out == in2) || (out == p)) {
-		nn out_cpy;
-    #ifdef WITH_LL_U256_MONT
-		my_nn_mul_redc1(&out_cpy, in1, in2, p, mpinv);
-    #else
-		_nn_mul_redc1(&out_cpy, in1, in2, p, mpinv);
-    #endif
-		nn_init(out, out_cpy.wlen);
-		nn_copy(out, &out_cpy);
-		nn_uninit(&out_cpy);
-	} else {
-		_nn_mul_redc1(out, in1, in2, p, mpinv);
-	}
+	nn out_cpy;
+#ifdef WITH_LL_U256_MONT
+	my_nn_mul_redc1(&out_cpy, in1, in2, p, mpinv);
+#else
+	_nn_mul_redc1(&out_cpy, in1, in2, p, mpinv);
+#endif
+	nn_init(out, out_cpy.wlen);
+	nn_copy(out, &out_cpy);
 }
 
 /*
