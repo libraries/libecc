@@ -186,7 +186,7 @@ int nn_iszero(nn_src_t A)
 	return 1;
 }
 
-/* 
+/*
  * Return 1 if given nn is one. Return 0 otherwise.
  * Done *in constant time*
  */
@@ -199,7 +199,7 @@ int nn_isone(nn_src_t A)
 	MUST_HAVE(A->wlen <= NN_MAX_WORD_LEN);
 
 	/* val[0] access is ok no matter wlen value */
-	ret = (A->val[0] != 1);	
+	ret = (A->val[0] != 1);
 	for (i = 1; i < NN_MAX_WORD_LEN; i++) {
 		int mask = ((i < A->wlen) ? 1 : 0);
 		ret |= ((A->val[i] != 0) & mask);
@@ -266,7 +266,7 @@ int nn_cmp_word(nn_src_t in, word_t w)
 int nn_cmp(nn_src_t A, nn_src_t B)
 {
 	u8 cmp_len;
-	int mask, ret, i;
+	int ret, i;
 
 	nn_check_initialized(A);
 	nn_check_initialized(B);
