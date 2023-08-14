@@ -148,6 +148,23 @@ void prj_pt_copy(prj_pt_t out, prj_pt_src_t in)
 	fp_copy(&(out->Z), &(in->Z));
 }
 
+void prj_pt_normalize(prj_pt_t out)
+{
+	fp inv;
+
+	prj_pt_check_initialized(out);
+	MUST_HAVE(!prj_pt_iszero(out));
+
+	fp_init(&inv, (out->X).ctx);
+
+	fp_inv(&inv, &(out->Z));
+	fp_mul(&(out->X), &(out->X), &inv);
+	fp_mul(&(out->Y), &(out->Y), &inv);
+	fp_one(&(out->Z));
+
+	fp_uninit(&inv);
+}
+
 void prj_pt_to_aff(aff_pt_t out, prj_pt_src_t in)
 {
 	fp inv;
@@ -168,7 +185,7 @@ void prj_pt_to_aff(aff_pt_t out, prj_pt_src_t in)
 void ec_shortw_aff_to_prj(prj_pt_t out, aff_pt_src_t in)
 {
 	aff_pt_check_initialized(in);
-	
+
 	/* The input affine point must be on the curve */
 	MUST_HAVE(is_on_curve(&(in->x), &(in->y), in->crv) == 1);
 
@@ -826,7 +843,7 @@ static void _prj_pt_mul_ltr_dbl_add_always(prj_pt_t out, nn_src_t m, prj_pt_src_
 	/* Initialize points */
 	prj_pt_init(&T[0], in->crv);
 	prj_pt_init(&T[1], in->crv);
-        /* 
+        /*
 	 * T[2] = R(P)
 	 * Blind the point with projective coordinates (X, Y, Z) => (l*X, l*Y, l*Z)
          */
@@ -850,7 +867,7 @@ static void _prj_pt_mul_ltr_dbl_add_always(prj_pt_t out, nn_src_t m, prj_pt_src_
 		prj_pt_dbl(&T[rbit], &T[rbit]);
 		/* Add:  T[1-r[i+1]] = ECADD(T[r[i+1]],T[2]) */
 		prj_pt_add(&T[1-rbit], &T[rbit], &T[2]);
-		/* T[r[i]] = T[d[i] ^ r[i+1]] 
+		/* T[r[i]] = T[d[i] ^ r[i+1]]
 		 * NOTE: we use the low level nn_copy function here to avoid
 		 * any possible leakage on operands with prj_pt_copy
 		 */

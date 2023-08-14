@@ -24,7 +24,7 @@ EXEC_TO_CLEAN = $(BUILD_DIR)/ec_self_tests $(BUILD_DIR)/ec_utils $(BUILD_DIR)/ec
 
 # all and clean, as you might expect
 # all: depend $(LIBS) $(TESTS_EXEC)
-all: depend $(LIBS) 
+all: depend $(LIBS) $(TESTS_EXEC)
 
 clean:
 	@rm -f $(LIBS) $(EXEC_TO_CLEAN)
